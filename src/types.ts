@@ -1,29 +1,32 @@
 export interface PortEntry {
   port: number;
   protocol: 'tcp' | 'udp';
-  process?: string;
-  pid?: number;
-}
-
-export type ChangeType = 'opened' | 'closed';
-
-export interface PortChange {
-  type: ChangeType;
-  port: number;
-  protocol?: 'tcp' | 'udp';
-  process?: string;
-  pid?: number;
+  pid: number | null;
+  process: string | null;
 }
 
 export interface PortSnapshot {
-  timestamp: number;
-  entries: PortEntry[];
+  timestamp: string;
+  ports: PortEntry[];
 }
 
-export interface DaemonConfig {
-  intervalMs: number;
-  notificationTitle?: string;
-  notificationSound?: boolean;
-  ignorePorts?: number[];
-  ignoreProcesses?: string[];
+export interface PortDiff {
+  opened: PortEntry[];
+  closed: PortEntry[];
+}
+
+export interface PortwatchConfig {
+  interval: number;          // polling interval in ms
+  ignoreProcesses: string[]; // process names to ignore
+  ignorePorts: number[];     // specific ports to ignore
+  ignoreProtocols: ('tcp' | 'udp')[];
+  notificationTitle: string;
+  persistState: boolean;
+  stateDir?: string;
+}
+
+export interface NotificationPayload {
+  title: string;
+  body: string;
+  urgency?: 'low' | 'normal' | 'critical';
 }
