@@ -1,32 +1,40 @@
+/** Represents a single listening port entry captured from lsof/netstat. */
 export interface PortEntry {
   port: number;
-  protocol: 'tcp' | 'udp';
-  pid: number | null;
-  process: string | null;
+  process: string;
+  proto: 'tcp' | 'udp';
+  pid: number;
 }
 
+/** A snapshot of all currently listening ports at a point in time. */
 export interface PortSnapshot {
-  timestamp: string;
-  ports: PortEntry[];
+  timestamp: number;
+  entries: PortEntry[];
 }
 
+/** The diff result between two snapshots. */
 export interface PortDiff {
   opened: PortEntry[];
   closed: PortEntry[];
 }
 
-export interface PortwatchConfig {
-  interval: number;          // polling interval in ms
-  ignoreProcesses: string[]; // process names to ignore
-  ignorePorts: number[];     // specific ports to ignore
-  ignoreProtocols: ('tcp' | 'udp')[];
-  notificationTitle: string;
-  persistState: boolean;
-  stateDir?: string;
+/** Resolved details about a running process. */
+export interface ProcessDetails {
+  pid: number;
+  command: string;
+  args: string;
 }
 
-export interface NotificationPayload {
-  title: string;
-  body: string;
-  urgency?: 'low' | 'normal' | 'critical';
+/** Filter configuration used to suppress notifications. */
+export interface FilterConfig {
+  ignorePorts: number[];
+  ignoreProcesses: string[];
+}
+
+/** Top-level daemon configuration. */
+export interface DaemonConfig {
+  intervalMs: number;
+  filters: FilterConfig;
+  logLevel: 'debug' | 'info' | 'warn' | 'error';
+  stateFile?: string;
 }
