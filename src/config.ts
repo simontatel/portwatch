@@ -73,3 +73,15 @@ export function mergeConfig(
       overrides.logFile !== undefined ? overrides.logFile : base.logFile,
   };
 }
+
+/**
+ * Writes the given config object to the specified file path as formatted JSON.
+ * Throws if the directory does not exist or the file cannot be written.
+ */
+export function saveConfig(config: PortwatchConfig, filePath: string): void {
+  const dir = path.dirname(filePath);
+  if (!fs.existsSync(dir)) {
+    fs.mkdirSync(dir, { recursive: true });
+  }
+  fs.writeFileSync(filePath, JSON.stringify(config, null, 2) + '\n', 'utf-8');
+}
