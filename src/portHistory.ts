@@ -72,3 +72,18 @@ export function loadHistory(): PortHistoryEntry[] {
 export function clearHistory(): void {
   saveState(HISTORY_KEY, []);
 }
+
+/**
+ * Returns history entries filtered by event type and/or port number.
+ * Useful for querying specific open/close events or tracking a single port.
+ */
+export function queryHistory(
+  filters: { event?: 'opened' | 'closed'; port?: number }
+): PortHistoryEntry[] {
+  const history = loadHistory();
+  return history.filter((entry) => {
+    if (filters.event !== undefined && entry.event !== filters.event) return false;
+    if (filters.port !== undefined && entry.port !== filters.port) return false;
+    return true;
+  });
+}
