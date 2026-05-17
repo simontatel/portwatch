@@ -44,6 +44,19 @@ describe('recordPortEvents', () => {
     const entries = recordPortEvents([], [snap(8080)]);
     expect(entries[0].timestamp).toBeGreaterThanOrEqual(before);
   });
+
+  it('detects multiple opened and closed ports simultaneously', () => {
+    const entries = recordPortEvents(
+      [snap(3000), snap(4000)],
+      [snap(3000), snap(5000), snap(6000)]
+    );
+    const opened = entries.filter(e => e.event === 'opened');
+    const closed = entries.filter(e => e.event === 'closed');
+    expect(opened).toHaveLength(2);
+    expect(closed).toHaveLength(1);
+    expect(opened.map(e => e.port)).toEqual(expect.arrayContaining([5000, 6000]));
+    expect(closed[0].port).toBe(4000);
+  });
 });
 
 describe('appendHistory', () => {
@@ -67,6 +80,19 @@ describe('appendHistory', () => {
     appendHistory([newEntry]);
     const saved = mockSaveState.mock.calls[0][1] as PortHistoryEntry[];
     expect(saved).toHaveLength(100);
+  });
+
+  it('keeps the most recent entries when trimming', () => {
+    const existing = Array.from({ length: 100 }, (_, i) => ({
+      timestamp: i, event: 'opened' as const, port: i, protocol: 'tcp', processName: 'x', pid: i,
+    }));
+    mockLoadState.mockReturnValue(existing);
+    const newEntry: PortHistoryEntry = { timestamp: 9999, event: 'opened', port: 9999, protocol: 'tcp', processName: 'y', pid: 2 };
+    appendHistory([newEntry]);
+    const saved = mockSaveState.mock.calls[0][1] as PortHistoryEntry[];
+    expect(saved).toHaveLength(100);
+    expect(saved[saved.length - 1].port).toBe(9999);
+    expect(saved[0].port).toBe(1);
   });
 });
 
