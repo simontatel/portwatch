@@ -1,40 +1,58 @@
-/** Represents a single listening port entry captured from lsof/netstat. */
 export interface PortEntry {
   port: number;
-  process: string;
-  proto: 'tcp' | 'udp';
   pid: number;
+  protocol: 'tcp' | 'udp';
+  process: string;
+  address?: string;
 }
 
-/** A snapshot of all currently listening ports at a point in time. */
 export interface PortSnapshot {
+  ports: PortEntry[];
   timestamp: number;
-  entries: PortEntry[];
 }
 
-/** The diff result between two snapshots. */
 export interface PortDiff {
   opened: PortEntry[];
   closed: PortEntry[];
+  timestamp: number;
 }
 
-/** Resolved details about a running process. */
-export interface ProcessDetails {
-  pid: number;
-  command: string;
-  args: string;
+export interface PortEvent {
+  type: 'opened' | 'closed';
+  port: PortEntry;
+  timestamp: number;
 }
 
-/** Filter configuration used to suppress notifications. */
-export interface FilterConfig {
-  ignorePorts: number[];
-  ignoreProcesses: string[];
+export interface PortHistoryRecord {
+  events: PortEvent[];
+  savedAt: number;
 }
 
-/** Top-level daemon configuration. */
-export interface DaemonConfig {
-  intervalMs: number;
-  filters: FilterConfig;
-  logLevel: 'debug' | 'info' | 'warn' | 'error';
+export interface Config {
+  interval?: number;
+  ignore?: IgnoreRule[];
+  logLevel?: 'debug' | 'info' | 'warn' | 'error';
+  throttleMs?: number;
   stateFile?: string;
+  historyFile?: string;
+}
+
+export interface IgnoreRule {
+  port?: number;
+  process?: string;
+  protocol?: 'tcp' | 'udp';
+}
+
+export interface AlertRecord {
+  key: string;
+  count: number;
+  firstSeen: number;
+  lastSeen: number;
+}
+
+export interface ReportSummary {
+  totalOpen: number;
+  byProtocol: Record<string, number>;
+  topProcesses: Array<{ process: string; count: number }>;
+  generatedAt: number;
 }
